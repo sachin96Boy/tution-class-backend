@@ -1,0 +1,28 @@
+import firebaseAdmin from "../firebase/firebase";
+import { Request, Response, NextFunction } from "express";
+
+export default function authMiddleware(
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
+    const { authorization } = req.headers;
+    if (!authorization) {
+        return res.status(401).send("Unauthorized");
+    }
+    const [bearer, token] = authorization.split(" ");
+    if (bearer !== "Bearer") {
+        return res.status(401).send("Unauthorized");
+    }
+    firebaseAdmin
+        .auth()
+        .verifyIdToken(token)
+        .then((decodedToken) => {
+            console.log(decodedToken);
+            next();
+        })
+        .catch((error) => {
+            console.log(error);
+            return res.status(401).send("Unauthorized");
+        });
+}
