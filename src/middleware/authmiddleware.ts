@@ -18,7 +18,7 @@ export default function authMiddleware(
         .auth()
         .verifyIdToken(token)
         .then((decodedToken) => {
-            console.log(decodedToken);
+            req.user = decodedToken;
             next();
         })
         .catch((error) => {
