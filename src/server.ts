@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import authRoutes from './routes/auth.routes';
-import firebase from './firebase/firebase';
+
 
 const app: Express = express();
 
