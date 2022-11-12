@@ -159,7 +159,7 @@ const loginUser = async (
             } else {
                 res.status(200).json({
                     status: 'error',
-                    message: 'User Not Found'
+                    message: 'Invalid Email or Password'
                 })
             }
         })
