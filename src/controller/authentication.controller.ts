@@ -5,8 +5,20 @@ import {
 } from 'express';
 import dotenv from 'dotenv';
 import twilio from 'twilio';
+import firebase from '../firebase/firebase';
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    sendEmailVerification,
+    updatePhoneNumber,
+    signInWithEmailAndPassword
+} from 'firebase/auth';
+import UserModal from '../modals/UserModal';
 
 dotenv.config();
+
+const auth = getAuth(firebase.firebaseApp);
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -17,11 +29,10 @@ const messageService = client.verify.v2.services.create(
     {
         friendlyName: 'Sipsa Institute Verification Service',
     }
-).then((service)=>{
+).then((service) => {
     console.log(service.sid);
     return service.sid;
-
-})
+});
 
 
 const sendVerificationTokenSms = async (
@@ -36,7 +47,7 @@ const sendVerificationTokenSms = async (
         ).verifications.create({
             to: `+${phoneNumber}`,
             channel: 'sms'
-        }).then((verfication)=>{
+        }).then((verfication) => {
             console.log(verfication);
             res.status(200).json({
                 status: verfication.status,
@@ -60,7 +71,7 @@ const checkVerificationToken = async (
         ).verificationChecks.create({
             to: `+${phoneNumber}`,
             code: token
-        }).then((verification_check)=>{
+        }).then((verification_check) => {
             console.log(verification_check);
             res.status(200).json({
                 status: verification_check.status,
@@ -73,7 +84,81 @@ const checkVerificationToken = async (
     }
 }
 
+const registerUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { fullName, email, mobile, password } = req.body;
+       await createUserWithEmailAndPassword(auth, email, password).then((createdUser) => {
+            const user = createdUser.user;
+            if (user) {
+                updateProfile(user, {
+                    displayName: fullName,
+                }).then(() => {
+                    updatePhoneNumber(user, mobile).then(() => {
+                        sendEmailVerification(user).then(() => {
+                            const newUser = {
+                                uid: user.uid,
+                                email: user.email,
+                                displayName: user.displayName,
+                                phoneNumber: user.phoneNumber,
+                                emailVerified: user.emailVerified,
+                                photoURL: user.photoURL,
+
+                            }
+                            UserModal.doc(user.uid).set(newUser)
+                            res.status(200).json({
+                                status: 'success',
+                                message: 'User Registered',
+                                user: newUser
+                            })
+                        })
+                    })
+                })
+            }
+        })
+    } catch (error) {
+        next(error);
+    }
+}
+
+const loginUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { email, password } = req.body;
+        await signInWithEmailAndPassword(auth, email, password).then((signedInUser) => {
+            const user = signedInUser.user;
+            if (user) {
+                UserModal.doc(user.uid).get().then((userDoc) => {
+                    const loggedInUser = {
+                        uid: userDoc.id,
+                        email: userDoc.data()?.email,
+                        displayName: userDoc.data()?.displayName,
+                        phoneNumber: userDoc.data()?.phoneNumber,
+                        emailVerified: userDoc.data()?.emailVerified,
+                        photoURL: userDoc.data()?.photoURL,
+                    }
+                    res.status(200).json({
+                        status: 'success',
+                        message: 'User Logged In',
+                        user: loggedInUser
+                    })
+                })
+            }
+        })
+    } catch (error) {
+        next(error);
+    }
+}
+
 export {
     sendVerificationTokenSms,
-    checkVerificationToken
+    checkVerificationToken,
+    registerUser,
+    loginUser
 }
