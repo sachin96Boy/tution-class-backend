@@ -25,14 +25,14 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 
 const client = twilio(accountSid, authToken);
 
-const messageService = client.verify.v2.services.create(
-    {
-        friendlyName: 'Sipsa Institute Verification Service',
-    }
-).then((service) => {
-    console.log(service.sid);
-    return service.sid;
-});
+// const messageService = client.verify.v2.services.create(
+//     {
+//         friendlyName: 'Sipsa Institute',
+//     }
+// ).then((service) => {
+//     console.log(service.sid);
+//     return service.sid;
+// });
 
 
 const sendVerificationTokenSms = async (
@@ -43,9 +43,10 @@ const sendVerificationTokenSms = async (
     try {
         const { phoneNumber } = req.body;
         client.verify.v2.services(
-            await messageService
+            // await messageService
+            'VA676126414c7745f12ccfa39a0867cea5'
         ).verifications.create({
-            to: `+${phoneNumber}`,
+            to: `+94${phoneNumber}`,
             channel: 'sms'
         }).then((verfication) => {
             console.log(verfication);
@@ -55,6 +56,7 @@ const sendVerificationTokenSms = async (
             })
         })
     } catch (error) {
+        console.log(error);
         next(error);
     }
 }
@@ -67,7 +69,8 @@ const checkVerificationToken = async (
     try {
         const { phoneNumber, token } = req.body;
         client.verify.v2.services(
-            await messageService
+            // await messageService
+            'VA676126414c7745f12ccfa39a0867cea5'
         ).verificationChecks.create({
             to: `+${phoneNumber}`,
             code: token

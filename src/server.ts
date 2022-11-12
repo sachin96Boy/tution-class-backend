@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Routes
-app.use('/auth', authRoutes)
+app.use("/auth",authRoutes)
 
 const PORT: string | number = process.env.PORT || 5000;
 
