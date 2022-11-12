@@ -91,7 +91,7 @@ const registerUser = async (
 ) => {
     try {
         const { fullName, email, mobile, password } = req.body;
-       await createUserWithEmailAndPassword(auth, email, password).then((createdUser) => {
+        await createUserWithEmailAndPassword(auth, email, password).then((createdUser) => {
             const user = createdUser.user;
             if (user) {
                 updateProfile(user, {
@@ -134,20 +134,32 @@ const loginUser = async (
         await signInWithEmailAndPassword(auth, email, password).then((signedInUser) => {
             const user = signedInUser.user;
             if (user) {
-                UserModal.doc(user.uid).get().then((userDoc) => {
-                    const loggedInUser = {
-                        uid: userDoc.id,
-                        email: userDoc.data()?.email,
-                        displayName: userDoc.data()?.displayName,
-                        phoneNumber: userDoc.data()?.phoneNumber,
-                        emailVerified: userDoc.data()?.emailVerified,
-                        photoURL: userDoc.data()?.photoURL,
-                    }
-                    res.status(200).json({
-                        status: 'success',
-                        message: 'User Logged In',
-                        user: loggedInUser
+                if (user.emailVerified) {
+                    UserModal.doc(user.uid).get().then((userDoc) => {
+                        const loggedInUser = {
+                            uid: userDoc.id,
+                            email: userDoc.data()?.email,
+                            displayName: userDoc.data()?.displayName,
+                            phoneNumber: userDoc.data()?.phoneNumber,
+                            emailVerified: userDoc.data()?.emailVerified,
+                            photoURL: userDoc.data()?.photoURL,
+                        }
+                        res.status(200).json({
+                            status: 'success',
+                            message: 'User Logged In',
+                            user: loggedInUser
+                        })
                     })
+                } else {
+                    res.status(200).json({
+                        status: 'error',
+                        message: 'Email Not Verified'
+                    })
+                }
+            } else {
+                res.status(200).json({
+                    status: 'error',
+                    message: 'User Not Found'
                 })
             }
         })
