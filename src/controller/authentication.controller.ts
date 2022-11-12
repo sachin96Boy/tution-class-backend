@@ -111,7 +111,7 @@ const registerUser = async (
                             UserCollection.doc(user.uid).set(newUser)
                             res.status(200).json({
                                 status: 'success',
-                                message: 'User Registered',
+                                message: 'User Registered Successfully. Please Verify Your Email',
                                 user: newUser
                             })
                         })
