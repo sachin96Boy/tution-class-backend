@@ -8,11 +8,8 @@ import twilio from 'twilio';
 import firebase from '../firebase/firebase';
 import {
     getAuth,
-    createUserWithEmailAndPassword,
-    updateProfile,
-    sendEmailVerification,
-    updatePhoneNumber,
-    signInWithEmailAndPassword
+    signInWithEmailAndPassword,
+
 } from 'firebase/auth';
 import UserCollection from '../collections/UserCollection';
 
@@ -20,11 +17,13 @@ dotenv.config();
 
 const auth = getAuth(firebase.firebaseApp);
 
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 
 const client = twilio(accountSid, authToken);
 
+// NEED TO RUN ONCE TO OBAIN THE TWILIO MESSAGE SERVICE SID
 // const messageService = client.verify.v2.services.create(
 //     {
 //         friendlyName: 'Sipsa Institute',
@@ -42,9 +41,8 @@ const sendVerificationTokenSms = async (
 ) => {
     try {
         const { phoneNumber } = req.body;
-        client.verify.v2.services(
-            // await messageService
-            'VA676126414c7745f12ccfa39a0867cea5'
+       await client.verify.v2.services(
+            process.env.TWILIO_MESSAGE_SERVICE_SID!
         ).verifications.create({
             to: `+94${phoneNumber}`,
             channel: 'sms'
@@ -68,11 +66,10 @@ const checkVerificationToken = async (
 ) => {
     try {
         const { phoneNumber, token } = req.body;
-        client.verify.v2.services(
-            // await messageService
-            'VA676126414c7745f12ccfa39a0867cea5'
+       await client.verify.v2.services(
+            process.env.TWILIO_MESSAGE_SERVICE_SID!
         ).verificationChecks.create({
-            to: `+${phoneNumber}`,
+            to: `+94${phoneNumber}`,
             code: token
         }).then((verification_check) => {
             console.log(verification_check);
@@ -93,35 +90,38 @@ const registerUser = async (
     next: NextFunction
 ) => {
     try {
-        const { fullName, email, mobile, password } = req.body;
-        await createUserWithEmailAndPassword(auth, email, password).then((createdUser) => {
-            const user = createdUser.user;
-            if (user) {
-                updateProfile(user, {
-                    displayName: fullName,
-                }).then(() => {
-                    updatePhoneNumber(user, mobile).then(() => {
-                        sendEmailVerification(user).then(() => {
-                            const newUser = {
-                                uid: user.uid,
-                                email: user.email,
-                                displayName: user.displayName,
-                                phoneNumber: user.phoneNumber,
-                                emailVerified: user.emailVerified,
-                                photoURL: user.photoURL,
+        const { values } = req.body;
+        await firebase.firebaseAdmin.auth().createUser({
+            email: values.email,
+            emailVerified: false,
+            phoneNumber: `+94${values.mobile}`,
+            password: values.password,
+            displayName: values.fullName,
+            disabled: false
+        }).then((userRecord) => {
+            const createdUser = {
+                uid: userRecord.uid,
+                email: userRecord.email,
+                displayName: userRecord.displayName,
+                phoneNumber: userRecord.phoneNumber,
+                emailVerified: userRecord.emailVerified,
 
-                            }
-                            UserCollection.doc(user.uid).set(newUser)
-                            res.status(200).json({
-                                status: 'success',
-                                message: 'User Registered Successfully. Please Verify Your Email',
-                                user: newUser
-                            })
-                        })
-                    })
-                })
             }
-        })
+            UserCollection.doc(userRecord.uid).set(createdUser).then(() => {
+                res.status(200).json({
+                    status: 'success',
+                    message: 'User Registered',
+                    user: createdUser
+                })
+            })
+            
+        }).catch((error) => {
+            console.log(error);
+            res.status(200).json({
+                status: 'error',
+                message: 'User Already Exists'
+            })
+        });
     } catch (error) {
         next(error);
     }
