@@ -14,7 +14,7 @@ import {
     updatePhoneNumber,
     signInWithEmailAndPassword
 } from 'firebase/auth';
-import UserModal from '../modals/UserModal';
+import UserCollection from '../collections/UserCollection';
 
 dotenv.config();
 
@@ -108,7 +108,7 @@ const registerUser = async (
                                 photoURL: user.photoURL,
 
                             }
-                            UserModal.doc(user.uid).set(newUser)
+                            UserCollection.doc(user.uid).set(newUser)
                             res.status(200).json({
                                 status: 'success',
                                 message: 'User Registered',
@@ -135,7 +135,7 @@ const loginUser = async (
             const user = signedInUser.user;
             if (user) {
                 if (user.emailVerified) {
-                    UserModal.doc(user.uid).get().then((userDoc) => {
+                    UserCollection.doc(user.uid).get().then((userDoc) => {
                         const loggedInUser = {
                             uid: userDoc.id,
                             email: userDoc.data()?.email,
