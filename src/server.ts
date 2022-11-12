@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
+import authRoutes from './routes/auth.routes';
 
 const app: Express = express();
 
@@ -16,6 +17,9 @@ app.use(morgan('dev'));
 app.use(express.json());
 // parse the request body
 app.use(express.urlencoded({ extended: false }));
+
+// Routes
+app.use('/auth', authRoutes)
 
 const PORT: string | number = process.env.PORT || 5000;
 
