@@ -12,6 +12,7 @@ import {
 
 } from 'firebase/auth';
 import UserCollection from '../collections/UserCollection';
+import sgMail from '@sendgrid/mail';
 
 dotenv.config();
 
@@ -33,6 +34,22 @@ const client = twilio(accountSid, authToken);
 //     return service.sid;
 // });
 
+const sendEmailVerification = async (email: string) => {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+    const msg = {
+        to: email,
+        from: process.env.SENDGRID_EMAIL_FROM!,
+        subject: 'Sipsa Institute Email Verification',
+        text: 'Please verify your email address',
+        html: '<strong>Please verify your email address</strong>',
+    }
+    await sgMail.send(msg).then(() => {
+        console.log('Email sent');
+    }).catch((error) => {
+        console.error(error);
+    });
+};
+
 
 const sendVerificationTokenSms = async (
     req: Request,
@@ -41,7 +58,7 @@ const sendVerificationTokenSms = async (
 ) => {
     try {
         const { phoneNumber } = req.body;
-       await client.verify.v2.services(
+        await client.verify.v2.services(
             process.env.TWILIO_MESSAGE_SERVICE_SID!
         ).verifications.create({
             to: `+94${phoneNumber}`,
@@ -66,7 +83,7 @@ const checkVerificationToken = async (
 ) => {
     try {
         const { phoneNumber, token } = req.body;
-       await client.verify.v2.services(
+        await client.verify.v2.services(
             process.env.TWILIO_MESSAGE_SERVICE_SID!
         ).verificationChecks.create({
             to: `+94${phoneNumber}`,
@@ -105,16 +122,19 @@ const registerUser = async (
                 displayName: userRecord.displayName,
                 phoneNumber: userRecord.phoneNumber,
                 emailVerified: userRecord.emailVerified,
-
+                password: userRecord.passwordHash,
+                salt: userRecord.passwordSalt,
             }
             UserCollection.doc(userRecord.uid).set(createdUser).then(() => {
-                res.status(200).json({
-                    status: 'success',
-                    message: 'User Registered',
-                    user: createdUser
+                sendEmailVerification(userRecord.email!).then(() => {
+                    res.status(200).json({
+                        status: 'success',
+                        message: 'User Registered, Please verify your email',
+                        user: createdUser
+                    })
                 })
-            })
-            
+            });
+
         }).catch((error) => {
             console.log(error);
             res.status(200).json({
