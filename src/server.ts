@@ -2,7 +2,7 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import authRoutes from './src/routes/auth.routes';
+import authRoutes from './routes/auth.routes';
 
 
 const app: Express = express();
