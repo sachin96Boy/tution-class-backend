@@ -23,7 +23,7 @@
       "forceConsistentCasingInFileNames": true,
         "module": "commonjs",
         "esModuleInterop": true,
-        "outDir": "dist",
+        "outDir": "./build",
         "rootDir": "./src",
         "target": "ES6",
         "skipLibCheck": true,
