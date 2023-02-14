@@ -19,11 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Routes
-app.use("/auth",authRoutes)
+app.use("/auth", authRoutes)
 
-app.get("/", (req, res) => {
-    res.send("Express on Vercel");
-  });
 
 const PORT: string | number = process.env.PORT || 5000;
 
@@ -31,4 +28,4 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
-export default app
+
