@@ -8,6 +8,9 @@
     "start": "ts-node src/server.ts",
     "dev": "nodemon  src/server.ts"
   },
+  "engines": {
+    "node": "14.x"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
