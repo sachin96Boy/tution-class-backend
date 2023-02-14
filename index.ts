@@ -10,9 +10,6 @@ const app: Express = express();
 dotenv.config();
 
 
-
-
-
 app.use(cors());
 // logging
 app.use(morgan('dev'));
@@ -29,3 +26,5 @@ const PORT: string | number = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+export default app
