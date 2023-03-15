@@ -14,6 +14,7 @@ import {
 import UserCollection from '../collections/UserCollection';
 import sgMail from '@sendgrid/mail';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
+import { validationResult } from 'express-validator';
 
 dotenv.config();
 
@@ -593,6 +594,10 @@ const registerUser = async (
 ) => {
     try {
         const { values } = req.body;
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
         await firebase.firebaseAdmin.auth().createUser({
             email: values.email,
             emailVerified: false,
@@ -641,6 +646,10 @@ const loginUser = async (
 ) => {
     try {
         const { email, password } = req.body;
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
         await signInWithEmailAndPassword(auth, email, password).then((signedInUser) => {
             const user = signedInUser.user;
             if (user) {
@@ -673,7 +682,7 @@ const loginUser = async (
                 })
             }
         }).catch((error) => {
-            console.log(error);
+            // console.log(error);
             res.status(200).json({
                 status: 'error',
                 message: 'Invalid Email or Password'
