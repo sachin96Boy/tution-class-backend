@@ -513,8 +513,12 @@ const userVerification = async (req:Request, res:Response) => {
             const uid = UserRecord.uid;
             const emailVerified = UserRecord.emailVerified;
             if(emailVerified){
+              // if already an authenticated user
+              // redirect to login 
                 res.status(200).redirect(`${process.env.REACT_APP_SIPSA_FRONTEND_URL}/login`);
             }else{
+              // if not verify first
+              // then redirect to new user login
                 firebase.firebaseAdmin.auth().updateUser(uid, {
                     emailVerified: true
                 }).then(()=>{
