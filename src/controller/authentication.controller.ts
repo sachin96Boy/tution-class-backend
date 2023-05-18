@@ -628,7 +628,7 @@ const registerUser = async (
             console.log(errorCode);
             let errorMessage = error.errorInfo.message;
             if (errorCode) {
-                res.status(200).json({
+                res.status(errorCode).json({
                     status: 'error',
                     message: errorMessage
                 });
@@ -670,20 +670,20 @@ const loginUser = async (
                         })
                     })
                 } else {
-                    res.status(200).json({
+                    res.status(401).json({
                         status: 'error',
                         message: 'Email Not Verified'
                     })
                 }
             } else {
-                res.status(200).json({
+                res.status(404).json({
                     status: 'error',
                     message: 'User Not Found'
                 })
             }
         }).catch((error) => {
             // console.log(error);
-            res.status(200).json({
+            res.status(401).json({
                 status: 'error',
                 message: 'Invalid Email or Password'
             })
