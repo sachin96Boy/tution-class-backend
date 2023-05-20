@@ -14,6 +14,7 @@ import {
 import UserCollection from '../collections/UserCollection';
 import sgMail from '@sendgrid/mail';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
+import { validationResult } from 'express-validator';
 
 dotenv.config();
 
@@ -513,8 +514,12 @@ const userVerification = async (req:Request, res:Response) => {
             const uid = UserRecord.uid;
             const emailVerified = UserRecord.emailVerified;
             if(emailVerified){
+              // if already an authenticated user
+              // redirect to login 
                 res.status(200).redirect(`${process.env.REACT_APP_SIPSA_FRONTEND_URL}/login`);
             }else{
+              // if not verify first
+              // then redirect to new user login
                 firebase.firebaseAdmin.auth().updateUser(uid, {
                     emailVerified: true
                 }).then(()=>{
@@ -589,6 +594,10 @@ const registerUser = async (
 ) => {
     try {
         const { values } = req.body;
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
         await firebase.firebaseAdmin.auth().createUser({
             email: values.email,
             emailVerified: false,
@@ -619,7 +628,7 @@ const registerUser = async (
             console.log(errorCode);
             let errorMessage = error.errorInfo.message;
             if (errorCode) {
-                res.status(200).json({
+                res.status(errorCode).json({
                     status: 'error',
                     message: errorMessage
                 });
@@ -637,6 +646,10 @@ const loginUser = async (
 ) => {
     try {
         const { email, password } = req.body;
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
         await signInWithEmailAndPassword(auth, email, password).then((signedInUser) => {
             const user = signedInUser.user;
             if (user) {
@@ -650,6 +663,7 @@ const loginUser = async (
                             emailVerified: userDoc.data()?.emailVerified,
                             photoURL: userDoc.data()?.photoURL,
                         }
+                        const acToken = firebase.firebaseAdmin.auth().createCustomToken(userDoc.id);
                         res.status(200).json({
                             status: 'success',
                             message: 'User Logged In',
@@ -657,20 +671,20 @@ const loginUser = async (
                         })
                     })
                 } else {
-                    res.status(200).json({
+                    res.status(401).json({
                         status: 'error',
                         message: 'Email Not Verified'
                     })
                 }
             } else {
-                res.status(200).json({
+                res.status(404).json({
                     status: 'error',
                     message: 'User Not Found'
                 })
             }
         }).catch((error) => {
-            console.log(error);
-            res.status(200).json({
+            // console.log(error);
+            res.status(401).json({
                 status: 'error',
                 message: 'Invalid Email or Password'
             })
