@@ -663,6 +663,7 @@ const loginUser = async (
                             emailVerified: userDoc.data()?.emailVerified,
                             photoURL: userDoc.data()?.photoURL,
                         }
+                        const acToken = firebase.firebaseAdmin.auth().createCustomToken(userDoc.id);
                         res.status(200).json({
                             status: 'success',
                             message: 'User Logged In',
