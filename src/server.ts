@@ -2,7 +2,6 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import helmet from 'helmet';
 import authRoutes from './routes/auth.routes';
 
 
@@ -12,8 +11,6 @@ dotenv.config();
 
 
 app.use(cors());
-
-app.use(helmet());
 // logging
 app.use(morgan('dev'));
 // take care of JSON Data
