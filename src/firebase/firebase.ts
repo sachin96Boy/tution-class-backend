@@ -6,8 +6,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 
+
+
 const firebaseAdmin = admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+  credential: admin.credential.cert(serviceAccount.default as admin.ServiceAccount),
 });
 
 const firebaseConfig: object = {
