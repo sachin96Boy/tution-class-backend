@@ -7,10 +7,14 @@ const blobServiceClient = BlobServiceClient.fromConnectionString(`${process.env.
 const containerClient = blobServiceClient.getContainerClient(`${process.env.AZURE_STORAGE_CONTAINER}`);
 const blobClient = containerClient.getBlobClient(`${process.env.AZURE_STORAGE_BLOB}`);
 
-const file = async ()=>{
-    await blobClient.download().then((blobresponse)=>{
-        return blobresponse
-    })
+const file:any = async () => {
+    await blobClient.download().then((blobresponse) => {
+        if (blobresponse._response.status == 200) {
+
+            return blobresponse.blobBody;
+        }
+        return null
+    });
 }
 
 export default file;
