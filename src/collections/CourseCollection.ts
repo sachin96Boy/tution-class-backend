@@ -1,7 +1,12 @@
-import firebase from '../firebase/firebase';
+import admin from 'firebase-admin'
 
-const db = firebase.fireStore;
 
-const CourseCollection = db.collection("Courses");
+const db = admin.firestore();
+const courseCollection = db.collection("Courses");
 
-export default CourseCollection;
+
+
+
+
+
+export default courseCollection;
