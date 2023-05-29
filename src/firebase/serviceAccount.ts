@@ -3,19 +3,37 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const blobServiceClient = BlobServiceClient.fromConnectionString(`${process.env.AZURE_STORAGE_CONNECTION_STRING}`);
-const containerClient = blobServiceClient.getContainerClient(`${process.env.AZURE_STORAGE_CONTAINER}`);
-const blobClient = containerClient.getBlobClient(`${process.env.AZURE_STORAGE_BLOB}`);
+async function fetchServiceAccount() {
+    try {
+        const blobServiceClient = BlobServiceClient.fromConnectionString(`${process.env.AZURE_STORAGE_CONNECTION_STRING}`);
+        const containerClient = blobServiceClient.getContainerClient(`${process.env.AZURE_STORAGE_CONTAINER}`);
+        const blobClient = containerClient.getBlockBlobClient(`${process.env.AZURE_STORAGE_BLOB}`);
 
-const file:any = async () => {
-    await blobClient.download().then((blobresponse) => {
-        if (blobresponse._response.status == 200) {
+        const downloadResponse = await blobClient.download();
+        const blobContents = await streamToBuffer(downloadResponse.readableStreamBody as NodeJS.ReadableStream);
+        console.log(blobContents)
 
-            return blobresponse.blobBody;
-        }
-        return null
+        const serviceAccount = JSON.parse(blobContents.toString());
+
+        return serviceAccount;
+    } catch (err) {
+        console.log('error on fetchserviceaccount: ', err);
+    }
+
+
+}
+
+async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
+
+    return new Promise((resolve, reject) => {
+        const chunks: any[] = [];
+        stream.on('data', (chunk: any) => chunks.push(chunk));
+        stream.on('error', (error: Error) => reject(error));
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
     });
 }
 
-export default file;
+export default fetchServiceAccount;
+
+
 

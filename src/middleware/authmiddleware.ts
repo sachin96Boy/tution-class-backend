@@ -1,4 +1,4 @@
-import firebase from "../firebase/firebase";
+import admin from 'firebase-admin';
 import { Request, Response, NextFunction } from "express";
 
 export default function authMiddleware(
@@ -14,7 +14,7 @@ export default function authMiddleware(
     if (bearer !== "Bearer") {
         return res.status(401).send("Unauthorized");
     }
-    firebase.firebaseAdmin
+    admin
         .auth()
         .verifyIdToken(token)
         .then((decodedToken) => {

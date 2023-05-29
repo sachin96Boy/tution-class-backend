@@ -1,7 +1,7 @@
-import firebase from "../firebase/firebase";
+import * as admin from 'firebase-admin';
 
-const db = firebase.fireStore
 
-const UserCollection = db.collection("Users")
+const db = admin.firestore();
+const userCollection = db?.collection("Users");
 
-export default UserCollection
+export default userCollection
