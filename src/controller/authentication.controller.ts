@@ -12,9 +12,8 @@ import {
 } from 'firebase/auth';
 import sgMail from '@sendgrid/mail';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
-import { initializeApp } from 'firebase/app'
 import { validationResult } from 'express-validator';
-import admin from 'firebase-admin';
+import firebase from '../firebase/firebase';
 
 import UserCollection from '../collections/UserCollection';
 
@@ -23,20 +22,12 @@ import UserCollection from '../collections/UserCollection';
 
 dotenv.config();
 
-const firebaseConfig: object = {
-  apiKey: process.env.REACT_APP_FIREBASE_APIKEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTHDOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECTID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGEBUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGINGSENDERID,
-  appId: process.env.REACT_APP_FIREBASE_APPID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENTID,
-};
 
 
-const firebaseApp = initializeApp(firebaseConfig)
 
-const auth = getAuth(firebaseApp);
+
+
+const auth = getAuth(firebase.firebaseApp);
 
 
 
@@ -533,7 +524,7 @@ const userVerification = async (req: Request, res: Response) => {
   try {
 
     const email = req.query.email;
-    await admin.auth().getUserByEmail(`${email}`).then(async (UserRecord: { uid: any; emailVerified: any; }) => {
+    await firebase.firebaseAdmin.auth().getUserByEmail(`${email}`).then(async (UserRecord: { uid: any; emailVerified: any; }) => {
       const uid = UserRecord.uid;
       const emailVerified = UserRecord.emailVerified;
       if (emailVerified) {
@@ -543,7 +534,7 @@ const userVerification = async (req: Request, res: Response) => {
       } else {
         // if not verify first
         // then redirect to new user login
-        await admin.auth().updateUser(uid, {
+        await firebase.firebaseAdmin.auth().updateUser(uid, {
           emailVerified: true
         }).then(() => {
           res.status(200).redirect(`${process.env.REACT_APP_SIPSA_FRONTEND_URL}/login?emailVerified=true`);
@@ -621,7 +612,7 @@ const registerUser = async (
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    await admin.auth().createUser({
+    await firebase.firebaseAdmin.auth().createUser({
       email: values.email,
       emailVerified: false,
       phoneNumber: `+94${values.mobile}`,
@@ -686,7 +677,7 @@ const loginUser = async (
               emailVerified: userDoc.data()?.emailVerified,
               photoURL: userDoc.data()?.photoURL,
             }
-            const acToken = await admin.auth().createCustomToken(userDoc.id)
+            const acToken = await firebase.firebaseAdmin.auth().createCustomToken(userDoc.id)
             res.status(200).json({
               status: 'success',
               message: 'User Logged In',

@@ -4,16 +4,14 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import helmet from 'helmet';
 
-import InitializeFirebaseAdmin from './firebase/firebase';
 import authRoutes from './routes/auth.routes';
 
 const app: Express = express();
 
 dotenv.config();
 
-async function startServer() {
+function startServer() {
     try {
-        await InitializeFirebaseAdmin();
 
         app.use(cors());
 
