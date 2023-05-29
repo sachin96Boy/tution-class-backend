@@ -21,7 +21,7 @@
     "compilerOptions": {
       // typescript options here
       "forceConsistentCasingInFileNames": true,
-        "module": "commonjs",
+        "module": "CommonJS",
         "esModuleInterop": true,
         "outDir": "./build",
         "rootDir": "./src",
