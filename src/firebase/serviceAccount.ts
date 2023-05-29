@@ -13,7 +13,7 @@ async function fetchServiceAccount() {
         const blobContents = await streamToBuffer(downloadResponse.readableStreamBody as NodeJS.ReadableStream);
         
         const serviceAccount : object = JSON.parse(blobContents.toString());
-        console.log(serviceAccount);
+
 
         return serviceAccount;
     } catch (err) {
