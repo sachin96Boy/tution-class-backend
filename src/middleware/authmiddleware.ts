@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import firebase from '../firebase/firebase';
+import firebase from '../firebase/firebaseAdmin';
 
 export default function authMiddleware(
     req: Request,

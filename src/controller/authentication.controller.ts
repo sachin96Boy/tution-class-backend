@@ -13,23 +13,11 @@ import {
 import sgMail from '@sendgrid/mail';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import { validationResult } from 'express-validator';
-import firebase from '../firebase/firebase';
 
-import UserCollection from '../collections/UserCollection';
-
-
-
+import initializeUserCollection from '../collections/UserCollection';
+import firebaseAcc from '../firebase/importFirebase';
 
 dotenv.config();
-
-
-
-
-
-
-const auth = getAuth(firebase.firebaseApp);
-
-
 
 
 // const auth = getAuth((await firebase).firebaseApp);
@@ -522,9 +510,9 @@ const sendEmailVerification = async (email: string, userRecord: UserRecord) => {
 
 const userVerification = async (req: Request, res: Response) => {
   try {
-
     const email = req.query.email;
-    await firebase.firebaseAdmin.auth().getUserByEmail(`${email}`).then(async (UserRecord: { uid: any; emailVerified: any; }) => {
+    const { firebaseAdmin } = await firebaseAcc();
+    await firebaseAdmin.auth().getUserByEmail(`${email}`).then(async (UserRecord: { uid: any; emailVerified: any; }) => {
       const uid = UserRecord.uid;
       const emailVerified = UserRecord.emailVerified;
       if (emailVerified) {
@@ -534,7 +522,7 @@ const userVerification = async (req: Request, res: Response) => {
       } else {
         // if not verify first
         // then redirect to new user login
-        await firebase.firebaseAdmin.auth().updateUser(uid, {
+        await firebaseAdmin.auth().updateUser(uid, {
           emailVerified: true
         }).then(() => {
           res.status(200).redirect(`${process.env.REACT_APP_SIPSA_FRONTEND_URL}/login?emailVerified=true`);
@@ -612,7 +600,8 @@ const registerUser = async (
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    await firebase.firebaseAdmin.auth().createUser({
+    const {  firebaseAdmin } = await firebaseAcc();
+    await firebaseAdmin.auth().createUser({
       email: values.email,
       emailVerified: false,
       phoneNumber: `+94${values.mobile}`,
@@ -627,7 +616,8 @@ const registerUser = async (
         phoneNumber: userRecord.phoneNumber,
         emailVerified: userRecord.emailVerified,
       }
-      UserCollection?.doc(userRecord.uid).set(createdUser).then(() => {
+      const { userCollection } = await initializeUserCollection();
+      userCollection.doc(userRecord.uid).set(createdUser).then(() => {
         sendEmailVerification(userRecord.email!, userRecord).then(() => {
           res.status(200).json({
             status: 'success',
@@ -664,11 +654,14 @@ const loginUser = async (
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+    const {  firebaseAdmin, firebaseApp } = await firebaseAcc();
+    const auth = getAuth(firebaseApp);
     await signInWithEmailAndPassword(auth, email, password).then(async (signedInUser) => {
       const user = signedInUser.user;
       if (user) {
         if (user.emailVerified) {
-          UserCollection?.doc(user.uid).get().then(async (userDoc: any) => {
+          const { userCollection } = await initializeUserCollection();
+          userCollection?.doc(user.uid).get().then(async (userDoc: any) => {
             const loggedInUser = {
               uid: userDoc.id,
               email: userDoc.data()?.email,
@@ -677,7 +670,8 @@ const loginUser = async (
               emailVerified: userDoc.data()?.emailVerified,
               photoURL: userDoc.data()?.photoURL,
             }
-            const acToken = await firebase.firebaseAdmin.auth().createCustomToken(userDoc.id)
+            
+            const acToken = await firebaseAdmin.auth().createCustomToken(userDoc.id)
             res.status(200).json({
               status: 'success',
               message: 'User Logged In',
