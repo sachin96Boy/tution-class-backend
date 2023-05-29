@@ -5,6 +5,7 @@ import { sendVerificationTokenSms, checkVerificationToken, registerUser, loginUs
 import SignInmiddleware from '../middleware/signInmiddleware';
 import SignUpmiddleware from '../middleware/signUpmiddleware';
 
+
 const router = express.Router();
 
 router.post('/send-verification-token', sendVerificationTokenSms);

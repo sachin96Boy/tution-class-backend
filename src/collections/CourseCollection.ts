@@ -1,7 +1,11 @@
-import firebase from '../firebase/firebase';
+import firebaseAcc from "../firebase/importFirebase";
 
-const db = firebase.fireStore;
+const initializeFirestore = async () => {
+  const firebaseInstance = await firebaseAcc();
+  const admin = firebaseInstance.firebaseAdmin;
+  const db = admin.firestore();
+  const courseCollection = db.collection("Course");
+  return courseCollection;
+};
 
-const CourseCollection = db.collection("Courses");
-
-export default CourseCollection;
+export default initializeFirestore;

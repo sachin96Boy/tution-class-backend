@@ -21,11 +21,11 @@
     "compilerOptions": {
       // typescript options here
       "forceConsistentCasingInFileNames": true,
-        "module": "commonjs",
+        "module": "CommonJS",
         "esModuleInterop": true,
         "outDir": "./build",
         "rootDir": "./src",
-        "target": "ES6",
+        "target": "es2017",
         "skipLibCheck": true,
         "strict": true,
         "noImplicitAny": true,
