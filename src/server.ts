@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 
 import authRoutes from './routes/auth.routes';
-import initializeFirebase from './firebase/firebaseAdmin';
+
 
 const app: Express = express();
 

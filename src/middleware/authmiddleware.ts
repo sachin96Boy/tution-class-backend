@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import firebase from '../firebase/firebaseAdmin';
+import firebaseAcc from "../firebase/importFirebase";
 
-export default function authMiddleware(
+export default async function authMiddleware(
     req: Request,
     res: Response,
     next: NextFunction
@@ -14,7 +14,8 @@ export default function authMiddleware(
     if (bearer !== "Bearer") {
         return res.status(401).send("Unauthorized");
     }
-    firebase.firebaseAdmin
+    const {firebaseAdmin} = await firebaseAcc();
+    firebaseAdmin
         .auth()
         .verifyIdToken(token)
         .then((decodedToken) => {
