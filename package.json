@@ -5,7 +5,8 @@
   "main": "src/server.ts",
   "scripts": {
     "test": "jest",
-    "start": "tsc && node build/server.js",
+    "build": "./node_modules/typescript/bin/tsc",
+    "start": "node build/server.js",
     "dev": "nodemon  src/server.ts"
   },
   "keywords": [],
